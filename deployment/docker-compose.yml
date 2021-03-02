@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-    comentarios-app:
-      container_name: comentarios-app
-      image: comentarios-app
+    comentariosapp:
+      container_name: comentariosapp
+      image: comentariosapp
       build:
         context: ../
         dockerfile: deployment/app/Dockerfile
