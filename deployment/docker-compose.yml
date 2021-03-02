@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+    comentarios-app:
+      container_name: comentarios-app
+      image: comentarios-app
+      build:
+        context: ../
+        dockerfile: deployment/app/Dockerfile
+      ports:
+        - "8000:8000"
