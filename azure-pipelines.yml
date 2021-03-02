@@ -1,0 +1,47 @@
+trigger:
+- main
+
+
+variables:
+  - group: 'pipeline-variables'
+
+  - name: dockerComposeFile
+    value: '**/docker-compose.yml'
+
+  - name: appName
+    value: 'comentariosapp'
+
+
+stages:
+
+# Build Docker Image and Push to DockerHub
+- stage: Build
+  displayName: Build and push Container Image
+  jobs:
+    - job: Build
+      displayName: Build
+      pool:
+        vmImage: ubuntu-latest
+
+      steps:
+      - task: DockerCompose@0
+        displayName: 'Build services $(appName)'
+        inputs:
+          containerregistrytype: 'Container Registry'
+          dockerComposeFile: $(dockerComposeFile)
+          qualifyImageNames: false
+          action: 'Build services'
+
+      - task: Bash@3
+        displayName: Docker tag image
+        inputs:
+          targetType: 'inline'
+          script: docker tag $(appName) $(DockerHubNamespace)/$(appName)
+
+      - task: Docker@2
+        displayName: 'Push docker image to DockerHub'
+        inputs:
+          containerRegistry: $(DockerHubServiceConnection)
+          repository: $(DockerHubNamespace)/$(appName)
+          tags: 'latest'
+          command: push
