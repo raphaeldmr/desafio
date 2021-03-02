@@ -11,6 +11,9 @@ variables:
   - name: appName
     value: 'comentariosapp'
 
+  - name: aciExposePort
+    value: '8000'
+
 
 stages:
 
@@ -45,3 +48,26 @@ stages:
           repository: $(DockerHubNamespace)/$(appName)
           tags: 'latest'
           command: push
+
+
+# Deploy Docker Image to ACI (IaC)
+- stage: Deploy
+  displayName: Deploy to ACI
+  dependsOn: [Build]
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: 'ARM Template deployment: ACI'
+      inputs:
+        azureResourceManagerConnection: $(AzureServiceConnection)
+        subscriptionId: $(AzureSubscriptionId)
+        resourceGroupName: $(AzureResourceGroupName)
+        location: $(AzureResourceLocation)
+        csmFile: '$(System.DefaultWorkingDirectory)/**/iac/aci/aci_template.json'
+        overrideParameters: '-app_name "$(appName)" -dockerhub_namespace "$(DockerHubNamespace)" -aci_expose_port $(aciExposePort)'
+        deploymentName: 'aci-$(appName)-deploy'

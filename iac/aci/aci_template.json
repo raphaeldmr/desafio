@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "app_name": {
+            "defaultValue":  "app",
+            "type": "String"
+        },
+        "dockerhub_namespace": {
+            "type": "String"
+        },
+        "aci_expose_port": {
+            "defaultValue":  80,
+            "type": "Int"
+        }
+    },
+    "variables": {
+        "aci_name": "[concat('aci-', parameters('app_name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2019-12-01",
+            "name": "[variables('aci_name')]",
+            "location": "eastus2",
+            "properties": {
+                "sku": "Standard",
+                "containers": [
+                    {
+                        "name": "[parameters('app_name')]",
+                        "properties": {
+                            "image": "[concat(parameters('dockerhub_namespace'),'/', parameters('app_name'), ':latest')]",
+                            "ports": [
+                                {
+                                    "port": "[parameters('aci_expose_port')]"
+                                }
+                            ],
+                            "environmentVariables": [],
+                            "resources": {
+                                "requests": {
+                                    "memoryInGB": 1.5,
+                                    "cpu": 1
+                                }
+                            }
+                        }
+                    }
+                ],
+                "initContainers": [],
+                "restartPolicy": "OnFailure",
+                "ipAddress": {
+                    "ports": [
+                        {
+                            "port": "[parameters('aci_expose_port')]"
+                        }
+                    ],
+                    "type": "Public",
+                    "dnsNameLabel": "[parameters('app_name')]"
+                },
+                "osType": "Linux"
+            }
+        }
+    ]
+}
