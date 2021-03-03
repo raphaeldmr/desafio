@@ -62,6 +62,7 @@ stages:
 - stage: Deploy
   displayName: Deploy to ACI
   dependsOn: [Build]
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   jobs:
   - job: Deploy
     displayName: Deploy
