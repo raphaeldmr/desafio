@@ -2,6 +2,7 @@ from flask import Flask
 from flask import jsonify
 from flask import request
 from applicationinsights.flask.ext import AppInsights
+from healthcheck import HealthCheck, EnvironmentDump
 
 
 app_name = 'comentarios'
@@ -9,6 +10,7 @@ app = Flask(app_name)
 app.debug = True
 
 
+# Azure Application Insights
 app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '__APPINSIGHTS_INSTRUMENTATIONKEY__'
 appinsights = AppInsights(app)
 
@@ -16,6 +18,24 @@ appinsights = AppInsights(app)
 def after_request(response):
     appinsights.flush()
     return response
+
+
+# Health Check
+health = HealthCheck()
+envdump = EnvironmentDump()
+
+def api_available():
+    return True, "api ok"
+
+health.add_check(api_available)
+
+def application_data():
+    return {"health check": "ok"}
+
+envdump.add_section("application", application_data)
+
+app.add_url_rule("/healthcheck", "healthcheck", view_func=lambda: health.run())
+app.add_url_rule("/environment", "environment", view_func=lambda: envdump.run())
 
 
 comments = {}
