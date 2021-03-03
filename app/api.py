@@ -1,11 +1,22 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
+from applicationinsights.flask.ext import AppInsights
 
 
 app_name = 'comentarios'
 app = Flask(app_name)
 app.debug = True
+
+
+app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '__APPINSIGHTS_INSTRUMENTATIONKEY__'
+appinsights = AppInsights(app)
+
+@app.after_request
+def after_request(response):
+    appinsights.flush()
+    return response
+
 
 comments = {}
 

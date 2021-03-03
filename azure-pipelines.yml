@@ -27,6 +27,14 @@ stages:
         vmImage: ubuntu-latest
 
       steps:
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+        displayName: 'Replace tokens in **/api.py'
+        inputs:
+          targetFiles: '**/api.py'
+          tokenPrefix: '__'
+          tokenSuffix: '__'
+          enableTelemetry: false
+
       - task: DockerCompose@0
         displayName: 'Build services $(appName)'
         inputs:
